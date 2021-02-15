@@ -297,7 +297,7 @@ for l in range(0,t_steps+1):
         #plt.ylabel("$n$")
         #plt.title("$N = $"+str(N))
         #plt.pause(0.2)
-        print('l = ',l,'of ',t_steps,'steps (',100*(l/t_steps),'%)')
+        print('l = ',l,'of ',t_steps,'steps (',100*(l/t_steps),'%)','max(n) = ',max(abs(phi)**2))
         
     # SAVING DATA AND OBSERVABLES
     if (l % t_save == 0):
