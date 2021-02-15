@@ -3,5 +3,6 @@ N_*
 *.txt
 *.csv
 *.png
+__pycache__
 euler_fin_dif
 old_rk4
