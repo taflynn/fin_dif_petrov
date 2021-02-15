@@ -227,16 +227,6 @@ lamb = 0.0001
  # array to save density snapshots
 phi = np.exp(1j*lamb*r**2)*phi
 
-# phase of the groundstate
-#phi_phase = np.angle(phi)
-#plt.plot(r,phi_phase)
-#plt.xlim((0,max(r)))
-#plt.xlabel("$r$")
-#plt.ylabel("$\theta$")
-#plt.title("Phase of groundstate")
-
-plt.plot(r,)
-
 for l in range(0,t_steps+1):
     # k1 CALCULATION
     KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi
@@ -246,7 +236,7 @@ for l in range(0,t_steps+1):
     H_int[1:-1] = int_coef*abs(phi[1:-1])**2*phi[1:-1] # s-wave term
     H_trap[1:-1] = V[1:-1]*phi[1:-1] # potential term
 
-    k1[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*phi[1:-1])
+    k1[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1])# - mu*phi[1:-1])
     
     k1[0] = k1[1]
     k1[-1] = k1[-2]
@@ -259,7 +249,7 @@ for l in range(0,t_steps+1):
     H_int[1:-1] = int_coef*abs(phi[1:-1] + k1[1:-1]/2)**2*(phi[1:-1] + k1[1:-1]/2) # s-wave term
     H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k1[1:-1]/2) # potential term
     
-    k2[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k1[1:-1]/2))
+    k2[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1])# - mu*(phi[1:-1] + k1[1:-1]/2))
     
     k2[0] = k2[1]
     k2[-1] = k2[-2]
@@ -272,7 +262,7 @@ for l in range(0,t_steps+1):
     H_int[1:-1] = int_coef*abs(phi[1:-1] + k2[1:-1]/2)**2*(phi[1:-1] + k2[1:-1]/2) # s-wave term
     H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k2[1:-1]/2) # potential term
    
-    k3[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k2[1:-1]/2))
+    k3[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1])# - mu*(phi[1:-1] + k2[1:-1]/2))
     
     k3[0] = k3[1]
     k3[-1] = k3[-2]
@@ -285,7 +275,7 @@ for l in range(0,t_steps+1):
     H_int[1:-1] = int_coef*abs(phi[1:-1] + k3[1:-1])**2*(phi[1:-1] + k3[1:-1]) # s-wave term
     H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k3[1:-1]) # potential term
     
-    k4[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k3[1:-1]))
+    k4[1:-1] = -1j*dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1])# - mu*(phi[1:-1] + k3[1:-1]))
     
     k4[0] = k4[1]
     k4[-1] = k4[-2]
@@ -325,7 +315,7 @@ plt.plot(t_array[0:-1],mean_r2[0:-1])
 plt.xlim((0,max(t_array)))
 plt.xlabel("$t$")
 plt.ylabel("$<r^2>$")
-plt.title("$\lambda = $"+str(lamb)+"$\mu_{tol} = $"+str(tol))
+plt.title("$\lambda = $"+str(lamb)+", $\mu_{tol} = $"+str(tol)+", $N = $"+str(N))
 plt.savefig("mu_parallel.png",dpi=300)
 
 plt.clf()
