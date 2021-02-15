@@ -1,0 +1,5 @@
+N_*
+*.spydata
+*.csv
+*.png
+__pycache__
