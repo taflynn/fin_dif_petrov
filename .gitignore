@@ -1,6 +1,5 @@
 N_*
 *.spydata
-*.txt
 *.csv
 *.png
 __pycache__
