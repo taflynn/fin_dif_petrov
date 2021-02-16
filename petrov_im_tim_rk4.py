@@ -7,30 +7,30 @@ pi = np.math.pi
 # RK4 IMAGINARY TIME FUNCTION (W/ FOR LOOPS IN KE TERM)
 def petrov_im_tim_rk4(phi,r,dr,dt,N,V,int_gas,im_t_steps):
     # GPE COEFFICIENTS
-	if int_gas == 0:
-		int_coef = 0
-		LHY_coef = 0
-	elif int_gas == 1:    
-		int_coef = -3*N
-		LHY_coef = (5/2)*N**(3/2)    
+    if int_gas == 0:
+        int_coef = 0
+        LHY_coef = 0
+    elif int_gas == 1:    
+        int_coef = -3*N
+        LHY_coef = (5/2)*N**(3/2)    
 
-	# INITIAL MU
-	phi_r = np.gradient(phi,dr) # phi derivative
-	mu = np.trapz(r**2*(0.5*abs(phi_r)**2 + V*abs(phi)**2  + int_coef*abs(phi)**4 + LHY_coef*abs(phi)**5))/np.trapz(r**2*abs(phi)**2)
-	tol = 1 # initialise tolerance
-	count = 1 # initialise counter for imaginary time
+    # INITIAL MU
+    phi_r = np.gradient(phi,dr) # phi derivative
+    mu = np.trapz(r**2*(0.5*abs(phi_r)**2 + V*abs(phi)**2  + int_coef*abs(phi)**4 + LHY_coef*abs(phi)**5))/np.trapz(r**2*abs(phi)**2)
+    tol = 1 # initialise tolerance
+    count = 1 # initialise counter for imaginary time
 
-	# INITIALISE HAMILTONIAN ARRAYS
-	H_KE = np.zeros(phi.size)
-	H_LHY = np.zeros(phi.size)
-	H_int = np.zeros(phi.size)
-	H_trap = np.zeros(phi.size)
-	KE = np.zeros(phi.size)
+    # INITIALISE HAMILTONIAN ARRAYS
+    H_KE = np.zeros(phi.size)
+    H_LHY = np.zeros(phi.size)
+    H_int = np.zeros(phi.size)
+    H_trap = np.zeros(phi.size)
+    KE = np.zeros(phi.size)
     
-	# IMAGINARY TIME WHILE LOOP
-	for i in range(0,im_t_steps+1):
-		# k1 CALCULATION
- 		for j in range(1,phi.size-1):
+    # IMAGINARY TIME WHILE LOOP
+    for i in range(0,im_t_steps+1):
+        # k1 CALCULATION
+        for j in range(1,phi.size-1):
             KE[j] = (2/r[j])*(phi[j+1] - phi[j])/dr + (phi[j+1] - 2*phi[j] + phi[j-1])/dr**2  
         # HAMILTONIAN TERMS    
         H_KE = -0.5*KE # KE term
@@ -130,53 +130,65 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
     # IMAGINARY TIME WHILE LOOP
     for l in range(0,im_t_steps+1):
         # k1 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi
-        # HAMILTONIAN TERMS
-        H_KE[1:-1] = -0.5*KE[1:-1] # KE term
-        H_LHY[1:-1] = LHY_coef*abs(phi[1:-1])**3*phi[1:-1] # LHY term
-        H_int[1:-1] = int_coef*abs(phi[1:-1])**2*phi[1:-1] # s-wave term
-        H_trap[1:-1] = V[1:-1]*phi[1:-1] # potential term
-    
-        k1[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*phi[1:-1])
-        
-        # k2 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k1) + Dr2 @ k1) 
-        # HAMILTONIAN TERMS
-        H_KE[1:-1] = -0.5*KE[1:-1] # KE term
-        H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k1[1:-1]/2)**3*(phi[1:-1] + k1[1:-1]/2) # LHY term
-        H_int[1:-1] = int_coef*abs(phi[1:-1] + k1[1:-1]/2)**2*(phi[1:-1] + k1[1:-1]/2) # s-wave term
-        H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k1[1:-1]/2) # potential term
-        
-        k2[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k1[1:-1]/2))
-        
-        # k3 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k2) + Dr2 @ k2)  
-        # HAMILTONIAN TERMS 
-        H_KE[1:-1] = -0.5*KE[1:-1] # KE term
-        H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k2[1:-1]/2)**3*(phi[1:-1] + k2[1:-1]/2) # LHY term
-        H_int[1:-1] = int_coef*abs(phi[1:-1] + k2[1:-1]/2)**2*(phi[1:-1] + k2[1:-1]/2) # s-wave term
-        H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k2[1:-1]/2) # potential term
-       
-        k3[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k2[1:-1]/2))
-        
-        #k4 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + ((2/r[1:-1])*(Dr @ k3) + Dr2 @ k3)  
-        # HAMILTONIAN TERMS
-        H_KE[1:-1] = -0.5*KE[1:-1] # KE term
-        H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k3[1:-1])**3*(phi[1:-1] + k3[1:-1]) # LHY term
-        H_int[1:-1] = int_coef*abs(phi[1:-1] + k3[1:-1])**2*(phi[1:-1] + k3[1:-1]) # s-wave term
-        H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k3[1:-1]) # potential term
-        
-        k4[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k3[1:-1]))
-        
-        # FINAL RUNGE-KUTTA STEP    
-        phi[1:-1] = phi[1:-1] + (1./6)*(k1[1:-1] + 2*k2[1:-1] + 2*k3[1:-1] + k4[1:-1])
-        
-        # NEUMANN BOUNDARY CONDITIONS
-        # phi(j+1) - phi(j) = 0
-        phi[0] = phi[1]
-        phi[-1] = phi[-2]
-    
+	    KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi
+	    # HAMILTONIAN TERMS
+	    H_KE[1:-1] = -0.5*KE[1:-1] # KE term
+	    H_LHY[1:-1] = LHY_coef*abs(phi[1:-1])**3*phi[1:-1] # LHY term
+	    H_int[1:-1] = int_coef*abs(phi[1:-1])**2*phi[1:-1] # s-wave term
+	    H_trap[1:-1] = V[1:-1]*phi[1:-1] # potential term
+
+	    k1[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*phi[1:-1])
+	    
+	    k1[0] = k1[1]
+	    k1[-1] = k1[-2]
+	    
+	    # k2 CALCULATION
+	    KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k1) + Dr2 @ k1) 
+	    # HAMILTONIAN TERMS
+	    H_KE[1:-1] = -0.5*KE[1:-1] # KE term
+	    H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k1[1:-1]/2)**3*(phi[1:-1] + k1[1:-1]/2) # LHY term
+	    H_int[1:-1] = int_coef*abs(phi[1:-1] + k1[1:-1]/2)**2*(phi[1:-1] + k1[1:-1]/2) # s-wave term
+	    H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k1[1:-1]/2) # potential term
+	    
+	    k2[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k1[1:-1]/2))
+	    
+	    k2[0] = k2[1]
+	    k2[-1] = k2[-2]
+	    
+	    # k3 CALCULATION
+	    KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k2) + Dr2 @ k2)  
+	    # HAMILTONIAN TERMS 
+	    H_KE[1:-1] = -0.5*KE[1:-1] # KE term
+	    H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k2[1:-1]/2)**3*(phi[1:-1] + k2[1:-1]/2) # LHY term
+	    H_int[1:-1] = int_coef*abs(phi[1:-1] + k2[1:-1]/2)**2*(phi[1:-1] + k2[1:-1]/2) # s-wave term
+	    H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k2[1:-1]/2) # potential term
+	   
+	    k3[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k2[1:-1]/2))
+	    
+	    k3[0] = k3[1]
+	    k3[-1] = k3[-2]
+	    
+	    #k4 CALCULATION
+	    KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + ((2/r[1:-1])*(Dr @ k3) + Dr2 @ k3)  
+	    # HAMILTONIAN TERMS
+	    H_KE[1:-1] = -0.5*KE[1:-1] # KE term
+	    H_LHY[1:-1] = LHY_coef*abs(phi[1:-1] + k3[1:-1])**3*(phi[1:-1] + k3[1:-1]) # LHY term
+	    H_int[1:-1] = int_coef*abs(phi[1:-1] + k3[1:-1])**2*(phi[1:-1] + k3[1:-1]) # s-wave term
+	    H_trap[1:-1] = V[1:-1]*(phi[1:-1] + k3[1:-1]) # potential term
+	    
+	    k4[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k3[1:-1]))
+	    
+	    k4[0] = k4[1]
+	    k4[-1] = k4[-2]
+	    
+	    # FINAL RUNGE-KUTTA STEP    
+	    phi[1:-1] = phi[1:-1] + (1./6)*(k1[1:-1] + 2*k2[1:-1] + 2*k3[1:-1] + k4[1:-1])
+	    
+	    # NEUMANN BOUNDARY CONDITIONS
+	    # phi(j+1) - phi(j) = 0
+	    phi[0] = phi[1]
+	    phi[-1] = phi[-2]
+      
         # WAVEFUNCTION NORMALISED
         Norm = 4*pi*np.trapz(r**2*abs(phi)**2)*dr
         phi = phi/np.sqrt(Norm) 
@@ -187,7 +199,7 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
         # ITERATE COUNTER
         count = count + 1
         
-        # MU AND TOLERANCE CALCULATION
+        # MU TOLERANCE CALCULATION
         mu_old = mu
         phi_r = np.gradient(phi,dr)
         mu = np.trapz(r**2*(0.5*abs(phi_r)**2 + V*abs(phi)**2 + int_coef*abs(phi)**4 + LHY_coef*abs(phi)**5))/np.trapz(r**2*abs(phi)**2)
