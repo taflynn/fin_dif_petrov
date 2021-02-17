@@ -190,8 +190,8 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
 	    phi[-1] = phi[-2]
       
         # WAVEFUNCTION NORMALISED
-        Norm = 4*pi*np.trapz(r**2*abs(phi)**2)*dr
-        phi = phi/np.sqrt(Norm) 
+		Norm = 4*pi*np.trapz(r**2*abs(phi)**2)*dr
+		phi = phi/np.sqrt(Norm) 
 
         # ITERATE TIME     
         t = t + dt    
