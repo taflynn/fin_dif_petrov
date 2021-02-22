@@ -10,7 +10,7 @@ Directory containing the codes constructed to solve the GP equation derived in P
 
 -> redone_petrov.py (A Python script which contains the CORRECT imaginary time and real time functions which have been updated since the petrov_im_tim_rk4.py and petrov_run_plot.py codes. This is because there was some confusion previously about avoided imposing some kind of periodic boundary conditions when calculating the kinetic energy terms. Any calculations of imaginary and real time should be undertaken USING THIS SCRIPT.)
 
--> petrov_im_tim_rk4.py (A Python script which contains a real time function to propagate the groundstate of the Petrov GPE in time. This includes an observable used to observe the breathing mode from Petrov 2015.)
+-> petrov_real_tim_rk4.py (A Python script which contains a real time function to propagate the groundstate of the Petrov GPE in time. This includes an observable used to observe the breathing mode from Petrov 2015.)
 
 -> freq_funcs.py (A Python script which contains a short curve fitting function to approximate the frequency of the mode from the real time function. This set of functions will be paired with the imaginary and real time functions in mu_petrov.py to build a parallelised code iterating across N and calculating \mu and \omega_0.)
 
