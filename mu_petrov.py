@@ -30,12 +30,12 @@ int_gas = 1
 
 N_max = 7
 N_min = 1
-N_steps = 5
+N_steps = 6
 N_tilde = None
 Mu = None
 # N_ARRAY SETUP 
 if rank == 0:
-    N_tilde = np.linspace(N_min,N_max+1,size*N_steps)
+    N_tilde = np.linspace(N_min,N_max,size*N_steps)
     Mu = np.empty(len(N_tilde))
     Nsize = len(N_tilde)
 else:
@@ -49,14 +49,14 @@ print("from process ",rank," N_partial is = ",N_partial)
 mu_array = np.empty(len(N_partial)).astype(float)
 
 # GRID
-Lr = 16 # box length
-Nr = 512 # grid points
+Lr = 24 # box length
+Nr = 256 # grid points
 dr = Lr/Nr # spatial step
 r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 4 ghost points
 
 # TIME SETUP
 dt = 0.1*dr**2 # time step 
-im_t_steps = 500000 # number of imaginary time steps
+im_t_steps = 250000 # number of imaginary time steps
 
 # PARAMETERS
 pi = np.math.pi
@@ -68,7 +68,7 @@ elif trap == 1:
     V = 0.5*r**2
 
 # INITIALISE WAVEFUNCTION
-phi_0 = np.exp(-(r)**2/(2*(1)**2)) # Gaussian initial condition
+phi_0 = np.exp(-(r)**2/(2*(2)**2)) # Gaussian initial condition
 Norm = 4*pi*np.trapz(r**2*abs(phi_0)**2)*dr
 phi_0 = phi_0/np.sqrt(Norm) # normalised initial condition
 
@@ -77,7 +77,7 @@ for i in range(0,len(N_partial)):
     # IMAGINARY TIME
     print("!BEGUN! process: ",rank,"has just begun the groundstate function for N = ",N_current)
     [phi,mu_array[i],tol_mu,tol_mode,t] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
-    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i])
+    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
 
 # Gather together the mu's from each process and save them into a large mu array
 comm.Gather(mu_array,Mu,root=0)
@@ -85,9 +85,9 @@ comm.Gather(mu_array,Mu,root=0)
 if comm.rank == 0:
     DataOut = np.column_stack((N_tilde,Mu))
     # np.savetxt('mu_N_steps'+str(N_steps)+'.csv',DataOut,delimiter=',',fmt='%18.16f')
-    plt.plot(N_tilde,-Mu,'o')
-    plt.xlim(0,7.5)
-    plt.ylim(-0.1,0.5)
+    plt.plot(N_tilde,-Mu)
+    plt.xlim(N_tilde[0],N_tilde[-1])
+    plt.ylim(-Mu[0],-Mu[-1])
     plt.xlabel("$(N - N_c)^{(1/4)}$")
     plt.ylabel("$\mu$")
     plt.savefig("mu_parallel.png",dpi=300)
