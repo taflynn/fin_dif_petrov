@@ -22,14 +22,14 @@ int_gas = 1
 Lr = 32 # box length
 Nr = 256 # grid points
 dr = Lr/Nr # spatial step
-r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 4 ghost points
+r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 2 ghost points
 
 # TIME SETUP
 dt = 0.1*dr**2 # time step 
 t_steps = 500000 # number of real time steps
 im_t_steps = 500000 # number of imaginary time steps
-t_frame = 10000
-t_save = 100
+t_frame = 10000 # print a plot, every t_frame steps in real time
+t_save = 100 # save key observables and density snapshots every t_save steps
 
 # PARAMETERS
 N = 1314.65 # effective atom number
@@ -78,7 +78,7 @@ k4 = np.zeros(phi.size)
  
 t_array = np.zeros((t_steps//t_save)) 
 mean_r2 = np.zeros((t_steps//t_save)) # observable used here <r^2> 
-dens_current = max(phi)
+dens_current = max(phi) # just a general initialisation for the tolerance of the density
 ###############################################################################
 # IMAGINARY TIME LOOP:
     
@@ -316,9 +316,9 @@ for l in range(0,t_steps):
 	# SAVING DATA AND OBSERVABLES
 	if (l % t_save == 0):
 		spacetime[:,l//t_save] = phi # save current wavefunction
-		phase[:,l//t_save] = np.angle(phi)
-		t_array[l//t_save] = t
-		mean_r2[l//t_save] = 4*pi*np.trapz(r**4*abs(phi)**2)*dr
+		phase[:,l//t_save] = np.angle(phi) # phase of the wavefunction
+		t_array[l//t_save] = t # current time
+		mean_r2[l//t_save] = 4*pi*np.trapz(r**4*abs(phi)**2)*dr # observable <r^2> measured
        
 	# ITERATE TIME     
 	t = t + dt   
@@ -326,6 +326,7 @@ for l in range(0,t_steps):
 	# ITERATE COUNTER
 	count = count + 1
 
+# PLOTTING <r^2(t)>
 plt.plot(t_array,mean_r2)
 plt.xlim((0,max(t_array)))
 plt.xlabel("$t$")
