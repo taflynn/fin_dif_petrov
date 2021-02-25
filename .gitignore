@@ -4,3 +4,4 @@ N_*
 *.png
 *.ipynb
 __pycache__
+figures
