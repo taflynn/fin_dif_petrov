@@ -26,13 +26,13 @@ r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 2 ghost points
 
 # TIME SETUP
 dt = 0.1*dr**2 # time step 
-t_steps = 500000 # number of real time steps
-im_t_steps = 500000 # number of imaginary time steps
+t_steps = 100000 # number of real time steps
+im_t_steps = 250000 # number of imaginary time steps
 t_frame = 10000 # print a plot, every t_frame steps in real time
 t_save = 100 # save key observables and density snapshots every t_save steps
 
 # PARAMETERS
-N = 1314.65 # effective atom number
+N = 1314.65 # effective atom number (avoid values close to 18.65)
 pi = np.math.pi
 
 # POTENTIAL
