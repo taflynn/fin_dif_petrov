@@ -109,7 +109,7 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
     t = 0
     mu = 0.0
     count = 1 # initialise imaginary time counter
-    dens = max(N*np.abs(phi)**2)
+    dens_current = max(N*np.abs(phi)**2)
     
     # DIFFERENTIAL OPERATORS
     Dr = (1/(2*dr))*(-1*eye(phi.size-2,phi.size,k=0,dtype=float) + eye(phi.size-2,phi.size,k=2,dtype=float))
