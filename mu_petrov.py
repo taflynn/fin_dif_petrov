@@ -16,6 +16,8 @@ import time
 os.chdir('/home/b6019832/Documents/mu_finder')
 # IMAGINARY TIME FUNCTION
 from petrov_im_tim_rk4 import petrov_im_tim_rk4_mat # RK4 w/ matrices in KE term
+from petrov_real_tim_rk4 import petrov_real_tim_rk4_mat
+from freq_funcs import curve_fitting
 
 # Setup MPI
 comm = MPI.COMM_WORLD
@@ -33,10 +35,12 @@ N_min = 1
 N_steps = 6
 N_tilde = None
 Mu = None
+Omega = None
 # N_ARRAY SETUP 
 if rank == 0:
     N_tilde = np.linspace(N_min,N_max,size*N_steps)
     Mu = np.empty(len(N_tilde))
+	Omega = None
     Nsize = len(N_tilde)
 else:
     Nsize = None
@@ -47,7 +51,7 @@ comm.Scatter(N_tilde,N_partial,root=0)
 print("from process ",rank," N_partial is = ",N_partial)
 # MU_ARRAY SETUP
 mu_array = np.empty(len(N_partial)).astype(float)
-
+omega_array = np.empty(len(N_partial)).astype(float)
 # GRID
 Lr = 24 # box length
 Nr = 256 # grid points
@@ -57,6 +61,7 @@ r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 4 ghost points
 # TIME SETUP
 dt = 0.1*dr**2 # time step 
 im_t_steps = 250000 # number of imaginary time steps
+t_steps = 30000 
 
 # PARAMETERS
 pi = np.math.pi
@@ -66,6 +71,8 @@ if trap == 0:
     V = np.zeros(r.size)
 elif trap == 1:
     V = 0.5*r**2
+
+mode = 1
 
 # INITIALISE WAVEFUNCTION
 phi_0 = np.exp(-(r)**2/(2*(2)**2)) # Gaussian initial condition
@@ -77,7 +84,12 @@ for i in range(0,len(N_partial)):
     # IMAGINARY TIME
     print("!BEGUN! process: ",rank,"has just begun the groundstate function for N = ",N_current)
     [phi,mu_array[i],tol_mu,tol_mode,t] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
-    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
+    if N_current>1800:
+		[phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode)
+		omega_array[i] = curve_fitting(t_array,mean_r2)	
+	else:
+		omega_array[i] = None 
+	print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
 
 # Gather together the mu's from each process and save them into a large mu array
 comm.Gather(mu_array,Mu,root=0)
