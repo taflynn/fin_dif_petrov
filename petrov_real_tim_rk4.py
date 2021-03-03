@@ -3,6 +3,7 @@ from scipy.sparse import eye
 pi = np.math.pi
 
 def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
+    
 
     # GPE COEFFICIENTS
     if int_gas == 0:
@@ -27,6 +28,7 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
     k3 = np.zeros(phi.size).astype(complex)
     k4 = np.zeros(phi.size).astype(complex)
     phi = phi.astype(complex)
+    t_save = 100
     t = 0
     spacetime = np.zeros((r.size,(t_steps//t_save))).astype(complex)
     phase = np.zeros((r.size,(t_steps//t_save))).astype(complex)
