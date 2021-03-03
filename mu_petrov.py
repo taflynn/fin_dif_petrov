@@ -40,7 +40,7 @@ Omega = None
 if rank == 0:
     N_tilde = np.linspace(N_min,N_max,size*N_steps)
     Mu = np.empty(len(N_tilde))
-	Omega = None
+    Omega = None
     Nsize = len(N_tilde)
 else:
     Nsize = None
@@ -85,11 +85,11 @@ for i in range(0,len(N_partial)):
     print("!BEGUN! process: ",rank,"has just begun the groundstate function for N = ",N_current)
     [phi,mu_array[i],tol_mu,tol_mode,t] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
     if N_current>1800:
-		[phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode)
-		omega_array[i] = curve_fitting(t_array,mean_r2)	
-	else:
-		omega_array[i] = None 
-	print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
+        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode)
+        omega_array[i] = curve_fitting(t_array,mean_r2)	
+    else:
+        omega_array[i] = None 
+    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
 
 # Gather together the mu's from each process and save them into a large mu array
 comm.Gather(mu_array,Mu,root=0)
