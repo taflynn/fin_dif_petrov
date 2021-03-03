@@ -1,10 +1,9 @@
 import numpy as np
 from scipy.optimize import curve_fit
 
-def sine_func(x,a,b,c,d):
-	return a*np.sin(b*x + c) + d
-
 def curve_fitting(t_array,mean_r2):
+	def sine_func(x,a,b,c,d):
+		return a*np.sin(b*x + c) + d
 	A = max(mean_r2) # initial guess of amplitude
 	B = 0.5 # very rough guess for frequency
 	C = 1 # default input value for phase shift
