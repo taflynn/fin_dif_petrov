@@ -30,7 +30,8 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
     t = 0
     spacetime = np.zeros((r.size,(t_steps//t_save))).astype(complex)
     phase = np.zeros((r.size,(t_steps//t_save))).astype(complex)
-
+    t_array = np.zeros((t_steps//t_save)) 
+    mean_r2 = np.zeros((t_steps//t_save)) # observable used here <r^2> 
     # swap to a smaller time step in real time
     dt = 0.1*dr**2
 
