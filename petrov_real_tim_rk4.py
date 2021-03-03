@@ -3,7 +3,6 @@ from scipy.sparse import eye
 pi = np.math.pi
 
 def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
-
     # GPE COEFFICIENTS
     if int_gas == 0:
         int_coef = 0
