@@ -30,9 +30,9 @@ trap = 0
 # interacting gas? (0 = Non-interacting gas, 1 = Interacting gas w/ LHY)
 int_gas = 1
 
-N_max = 7
+N_max = 7.5
 N_min = 1
-N_steps = 6
+N_steps = 16
 N_tilde = None
 Mu = None
 Omega = None
@@ -40,7 +40,7 @@ Omega = None
 if rank == 0:
     N_tilde = np.linspace(N_min,N_max,size*N_steps)
     Mu = np.empty(len(N_tilde))
-    Omega = None
+    Omega = np.empty(len(N_tilde))
     Nsize = len(N_tilde)
 else:
     Nsize = None
@@ -53,7 +53,7 @@ print("from process ",rank," N_partial is = ",N_partial)
 mu_array = np.empty(len(N_partial)).astype(float)
 omega_array = np.empty(len(N_partial)).astype(float)
 # GRID
-Lr = 24 # box length
+Lr = 32 # box length
 Nr = 256 # grid points
 dr = Lr/Nr # spatial step
 r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 4 ghost points
@@ -83,25 +83,25 @@ for i in range(0,len(N_partial)):
     N_current = N_partial[i]**4+18.65
     # IMAGINARY TIME
     print("!BEGUN! process: ",rank,"has just begun the groundstate function for N = ",N_current)
-    [phi,mu_array[i],tol_mu,tol_mode,t] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
-    if N_current>1800:
-        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode)
+    [phi,mu_array[i],tol_mode] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
+    if N_current>1050:
+        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu_array[i],r,dr,dt,N_current,V,int_gas,t_steps,mode)
         omega_array[i] = curve_fitting(t_array,mean_r2)	
     else:
         omega_array[i] = None 
-    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and tol = ",tol_mu)
+    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and density tol = ",tol_mode)
 
 # Gather together the mu's from each process and save them into a large mu array
 comm.Gather(mu_array,Mu,root=0)
-
+comm.Gather(omega_array,Omega,root=0)
 if comm.rank == 0:
     DataOut = np.column_stack((N_tilde,Mu))
     # np.savetxt('mu_N_steps'+str(N_steps)+'.csv',DataOut,delimiter=',',fmt='%18.16f')
-    plt.plot(N_tilde,-Mu)
+    plt.plot(N_tilde,Omega,N_tilde,-Mu)
     plt.xlim(N_tilde[0],N_tilde[-1])
     plt.ylim(-Mu[0],-Mu[-1])
     plt.xlabel("$(N - N_c)^{(1/4)}$")
-    plt.ylabel("$\mu$")
-    plt.savefig("mu_parallel.png",dpi=300)
+    plt.legend(("$\omega_0$","-$\mu$"))
+    plt.savefig("mu_w_breath_damped.png",dpi=300)
     plt.show
     

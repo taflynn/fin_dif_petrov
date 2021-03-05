@@ -110,8 +110,5 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
         # ITERATE TIME     
         t = t + dt   
 
-        # ITERATE COUNTER
-        count = count + 1
-
     return phi,spacetime,t_array,mean_r2
 
