@@ -1,77 +1,107 @@
 # PACKAGES
-from mpi4py import MPI
 import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import numpy as np
+from mpi4py import MPI
 import scipy.fftpack
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 import time
 # ABSOLUTE PATH 
-os.chdir('C:\\Users\\TAFly\\Documents\\PhD\\1st_year\\Python_GPE\\fin_dif_codes')
+os.chdir('/home/b6019832/Documents/mu_finder')
 # IMAGINARY TIME FUNCTION
-from petrov_im_tim_euler import petrov_im_tim_euler # euler
-from petrov_im_tim_rk4 import petrov_im_tim_rk4 # RK4 w/ for loops in KE term
 from petrov_im_tim_rk4 import petrov_im_tim_rk4_mat # RK4 w/ matrices in KE term
+from petrov_real_tim_rk4 import petrov_real_tim_rk4_mat
+from freq_funcs import curve_fitting
 
 # Setup MPI
 comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-# start timer
-tic = time.perf_counter()
-    
 # SWITCHES:
 # trap? 0=NO,1=YES
 trap = 0
 # interacting gas? (0 = Non-interacting gas, 1 = Interacting gas w/ LHY)
 int_gas = 1
 
-N_max = 3145
-
+N_max = 7.5
+N_min = 1
+N_steps = 16
+N_tilde = None
+Mu = None
+Omega = None
 # N_ARRAY SETUP 
 if rank == 0:
-    N = np.arange(1,N_max+1,100)
-    Mu = np.empty(N.shape[0])
+    N_tilde = np.linspace(N_min,N_max,size*N_steps)
+    Mu = np.empty(len(N_tilde))
+    Omega = np.empty(len(N_tilde))
+    Nsize = len(N_tilde)
+else:
+    Nsize = None
+Nsize = comm.bcast(Nsize,root=0)
 # SCATTER THE N ARRAY ACROSS THE PROCESSES
-N_partial = np.empty(N_max//size).astype(int)
-comm.Scatter(N,N_partial,root=0)
+N_partial = np.empty(Nsize//size).astype(float)
+comm.Scatter(N_tilde,N_partial,root=0)
+print("from process ",rank," N_partial is = ",N_partial)
 # MU_ARRAY SETUP
-mu_array = np.empty(N_partial.shape[0]).astype(float)
-
+mu_array = np.empty(len(N_partial)).astype(float)
+omega_array = np.empty(len(N_partial)).astype(float)
 # GRID
-Lr = 12 # box length
+Lr = 32 # box length
 Nr = 256 # grid points
 dr = Lr/Nr # spatial step
 r = np.arange(-1/2,(Nr + 3/2),1)*dr # position array with 4 ghost points
 
 # TIME SETUP
 dt = 0.1*dr**2 # time step 
-im_t_steps = 1000000 # number of imaginary time steps
+im_t_steps = 250000 # number of imaginary time steps
+t_steps = 30000 
 
 # PARAMETERS
 pi = np.math.pi
 
 # POTENTIAL
 if trap == 0:
-    V = 0
+    V = np.zeros(r.size)
 elif trap == 1:
     V = 0.5*r**2
 
-for i in range(0,N_partial.shape[0]):
-    # INITIALISE WAVEFUNCTION
-    phi_0 = np.exp(-(r)**2/(2*(1)**2)) # Gaussian initial condition
-    Norm = 4*pi*np.trapz(r**2*abs(phi_0)**2)*dr
-    phi_0 = phi_0/np.sqrt(Norm) # normalised initial condition
-    phi = phi_0
+mode = 1
+
+# INITIALISE WAVEFUNCTION
+phi_0 = np.exp(-(r)**2/(2*(2)**2)) # Gaussian initial condition
+Norm = 4*pi*np.trapz(r**2*abs(phi_0)**2)*dr
+phi_0 = phi_0/np.sqrt(Norm) # normalised initial condition
+
+for i in range(0,len(N_partial)):
+    N_current = N_partial[i]**4+18.65
     # IMAGINARY TIME
-    [phi,mu_array[i],tol_mu,tol_mode] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_partial[i],V,int_gas,im_t_steps)
+    print("!BEGUN! process: ",rank,"has just begun the groundstate function for N = ",N_current)
+    [phi,mu_array[i],tol_mode] = petrov_im_tim_rk4_mat(phi_0,r,dr,dt,N_current,V,int_gas,im_t_steps)
+    if N_current>1050:
+        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu_array[i],r,dr,dt,N_current,V,int_gas,t_steps,mode)
+        omega_array[i] = curve_fitting(t_array,mean_r2)	
+    else:
+        omega_array[i] = None 
+    print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and density tol = ",tol_mode)
 
-comm.Gather(mu_array,mu,root=0)
-
+# Gather together the mu's from each process and save them into a large mu array
+comm.Gather(mu_array,Mu,root=0)
+comm.Gather(omega_array,Omega,root=0)
 if comm.rank == 0:
-    plt.plot((N-18.65)**(0.45),Mu)
-    plt.xlabel("$(N - N_{c})^{1/4}$")
-    plt.ylabel("\mu")
-    plt.savefig("mu_parallel.png",dpi=300)
+    DataOut = np.column_stack((N_tilde,Mu))
+    # np.savetxt('mu_N_steps'+str(N_steps)+'.csv',DataOut,delimiter=',',fmt='%18.16f')
+    plt.plot(N_tilde,Omega,N_tilde,-Mu)
+    plt.xlim(N_tilde[0],N_tilde[-1])
+    plt.ylim(-Mu[0],-Mu[-1])
+    plt.xlabel("$(N - N_c)^{(1/4)}$")
+    plt.legend(("$\omega_0$","-$\mu$"))
+    plt.savefig("mu_w_breath_damped.png",dpi=300)
     plt.show
     

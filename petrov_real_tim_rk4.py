@@ -3,7 +3,6 @@ from scipy.sparse import eye
 pi = np.math.pi
 
 def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
-
     # GPE COEFFICIENTS
     if int_gas == 0:
         int_coef = 0
@@ -27,10 +26,12 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
     k3 = np.zeros(phi.size).astype(complex)
     k4 = np.zeros(phi.size).astype(complex)
     phi = phi.astype(complex)
+    t_save = 100
     t = 0
     spacetime = np.zeros((r.size,(t_steps//t_save))).astype(complex)
     phase = np.zeros((r.size,(t_steps//t_save))).astype(complex)
-
+    t_array = np.zeros((t_steps//t_save)) 
+    mean_r2 = np.zeros((t_steps//t_save)) # observable used here <r^2> 
     # swap to a smaller time step in real time
     dt = 0.1*dr**2
 
@@ -108,9 +109,6 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
 
         # ITERATE TIME     
         t = t + dt   
-
-        # ITERATE COUNTER
-        count = count + 1
 
     return phi,spacetime,t_array,mean_r2
 
