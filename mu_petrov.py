@@ -18,6 +18,7 @@ os.chdir('/home/b6019832/Documents/mu_finder')
 from petrov_im_tim_rk4 import petrov_im_tim_rk4_mat # RK4 w/ matrices in KE term
 from petrov_real_tim_rk4 import petrov_real_tim_rk4_mat
 from freq_funcs import curve_fitting
+import pandas as pd
 
 # Setup MPI
 comm = MPI.COMM_WORLD
@@ -88,7 +89,7 @@ for i in range(0,len(N_partial)):
         [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu_array[i],r,dr,dt,N_current,V,int_gas,t_steps,mode)
         omega_array[i] = curve_fitting(t_array,mean_r2)	
     else:
-        omega_array[i] = None 
+        omega_array[i] = np.NaN 
     print("!COMPLETED! process: ",rank," just completed N = ",N_current,", with mu = ",mu_array[i]," and density tol = ",tol_mode)
 
 # Gather together the mu's from each process and save them into a large mu array
@@ -106,7 +107,19 @@ if comm.rank == 0:
     plt.show
     
 # SAVING DATA (Produces two csv files: 1) mu(N); 2) omega_0(N))
+if comm.rank == 0:
 mu_data = np.column_stack((N_tilde,-Mu))
 np.savetxt('mu_petrov.csv',mu_data,delimiter=',',fmt='%18.16f')
 omega_data = np.column_stack((N_tilde,Omega))
 np.savetxt('omega0_petrov.csv',omega_data,delimiter=',',fmt='%18.16f')
+
+
+# Saving data using pandas dataframe
+#mu_data = {'N_tilde':N_tilde, 'Mu':-Mu}
+#data_frame = pd.DataFrame(mu_data, columns = ['N_tilde', 'Mu'])
+#data_frame.to_csv('mu_petrov.csv',na_rep=NULL,index=False,index_label=False)
+
+#omega_data = {'N_tilde':N_tilde, 'Omega_0':Omega}
+#data_frame = pd.DataFrame(mu_data, columns = ['N_tilde', 'Omega_0'])
+#data_frame.to_csv('omega0_petrov.csv',na_rep=NULL,index=False,index_label=False)
+
