@@ -42,8 +42,7 @@ t_frame = 10000
 t_save = 100
 
 # PARAMETERS
-N = 1314.65 # effective atom number
-N = 1800
+N = 3000 # effective atom number
 pi = np.math.pi
 
 # POTENTIAL
@@ -53,7 +52,7 @@ elif trap == 1:
     V = 0.5*r**2
 
 # INITIALISE WAVEFUNCTION
-phi_0 = np.exp(-(r)**2/(2*(10)**2)) # Gaussian initial condition
+phi_0 = np.exp(-(r)**2/(2*(2)**2)) # Gaussian initial condition
 Norm = 4*pi*np.trapz(r**2*np.abs(phi_0)**2)*dr
 phi_0 = phi_0/np.sqrt(Norm) # normalised initial condition
 phi = phi_0
@@ -208,6 +207,10 @@ for l in range(0,im_t_steps):
 
 #plt.plot(r,np.sqrt(N)*phi)
 #plt.savefig('test_phi0.png',dpi=300)
+
+# SAVING DATA (2 columns, spatial array and wavefunction)
+DataOut = np.column_stack((r,np.sqrt(N)*phi))
+np.savetxt('phi0_N'+str(N)+'prime.csv',DataOut,delimiter=',',fmt='%18.16f')
 ###############################################################################
 # REAL TIME LOOP:
 
