@@ -105,3 +105,8 @@ if comm.rank == 0:
     plt.savefig("mu_w_breath_damped.png",dpi=300)
     plt.show
     
+# SAVING DATA (Produces two csv files: 1) mu(N); 2) omega_0(N))
+mu_data = np.column_stack((N_tilde,-Mu))
+np.savetxt('mu_petrov.csv',mu_data,delimiter=',',fmt='%18.16f')
+omega_data = np.column_stack((N_tilde,Omega))
+np.savetxt('omega0_petrov.csv',omega_data,delimiter=',',fmt='%18.16f')
