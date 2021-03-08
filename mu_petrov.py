@@ -108,10 +108,10 @@ if comm.rank == 0:
     
 # SAVING DATA (Produces two csv files: 1) mu(N); 2) omega_0(N))
 if comm.rank == 0:
-mu_data = np.column_stack((N_tilde,-Mu))
-np.savetxt('mu_petrov.csv',mu_data,delimiter=',',fmt='%18.16f')
-omega_data = np.column_stack((N_tilde,Omega))
-np.savetxt('omega0_petrov.csv',omega_data,delimiter=',',fmt='%18.16f')
+    mu_data = np.column_stack((N_tilde,-Mu))
+    np.savetxt('mu_petrov.csv',mu_data,delimiter=',',fmt='%18.16f')
+    omega_data = np.column_stack((N_tilde,Omega))
+    np.savetxt('omega0_petrov.csv',omega_data,delimiter=',',fmt='%18.16f')
 
 
 # Saving data using pandas dataframe
