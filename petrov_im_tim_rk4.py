@@ -109,7 +109,7 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
     t = 0.0 # intial time
     mu = 0.0 # initial chemical potential
     count = 1 # initialise imaginary time counter
-    dens = max(N*np.abs(phi)**2) # initial max density
+    dens_current = max(N*np.abs(phi)**2) # initial max density
     
     # DIFFERENTIAL OPERATORS
     # first order derivative in the form of a sparse matrix (centrally defined)

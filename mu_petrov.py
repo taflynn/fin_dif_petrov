@@ -8,6 +8,7 @@ os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["NUMEXPR_NUM_THREADS"] = "1"
 import numpy as np
 from mpi4py import MPI
+import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 # ABSOLUTE PATH (might need to change using pwd) 
