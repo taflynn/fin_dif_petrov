@@ -42,7 +42,7 @@ def petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode):
     dt = 0.1*dr**2
 
     # invoke breathing mode
-    mode == 1:
+    if mode == 1:
         lamb = 1e-4 # small constant
         phi = np.exp(1j*lamb*r**2)*phi # small phase imprint of the form exp(i*lambda*F) where F = r^2 for breathing mode
 
