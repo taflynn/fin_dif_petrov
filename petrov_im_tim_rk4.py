@@ -106,13 +106,15 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
         LHY_coef = (5/2)*N**(3/2)    
 
     # INITIAL MU AND TIME
-    t = 0
-    mu = 0.0
+    t = 0.0 # intial time
+    mu = 0.0 # initial chemical potential
     count = 1 # initialise imaginary time counter
-    dens = max(N*np.abs(phi)**2)
+    dens = max(N*np.abs(phi)**2) # initial max density
     
     # DIFFERENTIAL OPERATORS
+    # first order derivative in the form of a sparse matrix (centrally defined)
     Dr = (1/(2*dr))*(-1*eye(phi.size-2,phi.size,k=0,dtype=float) + eye(phi.size-2,phi.size,k=2,dtype=float))
+    # second order derivative in the form of a sparse matrix (centrally defined 3-point formula)
     Dr2 =  (1/dr**2)*(eye(phi.size-2,phi.size,k=0,dtype=float) -2*eye(phi.size-2,phi.size,k=1,dtype=float) + eye(phi.size-2,phi.size,k=2,dtype=float))
 
     # INITIALISING ARRAYS
@@ -128,7 +130,7 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
     
     for l in range(0,im_t_steps):
         # k1 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi
+        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi # Kinetic Energy derivatives
         # HAMILTONIAN TERMS
         H_KE[1:-1] = -0.5*KE[1:-1] # KE term
         H_LHY[1:-1] = LHY_coef*np.abs(phi[1:-1])**3*phi[1:-1] # LHY term
@@ -137,11 +139,12 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
 
         k1[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*phi[1:-1])
 
+        # Neumann Boundary Conditions
         k1[0] = k1[1]
         k1[-1] = k1[-2]
 
         # k2 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k1) + Dr2 @ k1) 
+        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k1) + Dr2 @ k1) # Kinetic Energy derivatives
         # HAMILTONIAN TERMS
         H_KE[1:-1] = -0.5*KE[1:-1] # KE term
         H_LHY[1:-1] = LHY_coef*np.abs(phi[1:-1] + k1[1:-1]/2)**3*(phi[1:-1] + k1[1:-1]/2) # LHY term
@@ -150,11 +153,12 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
 
         k2[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k1[1:-1]/2))
 
+        # Neumann Boundary Conditions
         k2[0] = k2[1]
         k2[-1] = k2[-2]
 
         # k3 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k2) + Dr2 @ k2)  
+        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + 0.5*((2/r[1:-1])*(Dr @ k2) + Dr2 @ k2)  # Kinetic Energy derivatives
         # HAMILTONIAN TERMS 
         H_KE[1:-1] = -0.5*KE[1:-1] # KE term
         H_LHY[1:-1] = LHY_coef*np.abs(phi[1:-1] + k2[1:-1]/2)**3*(phi[1:-1] + k2[1:-1]/2) # LHY term
@@ -163,11 +167,12 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
 
         k3[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k2[1:-1]/2))
 
+        # Neumann Boundary Conditions
         k3[0] = k3[1]
         k3[-1] = k3[-2]
 
         #k4 CALCULATION
-        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + ((2/r[1:-1])*(Dr @ k3) + Dr2 @ k3)  
+        KE[1:-1] = (2/r[1:-1])*(Dr @ phi) + Dr2 @ phi + ((2/r[1:-1])*(Dr @ k3) + Dr2 @ k3)  # Kinetic Energy derivatives
         # HAMILTONIAN TERMS
         H_KE[1:-1] = -0.5*KE[1:-1] # KE term
         H_LHY[1:-1] = LHY_coef*np.abs(phi[1:-1] + k3[1:-1])**3*(phi[1:-1] + k3[1:-1]) # LHY term
@@ -176,6 +181,7 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
 
         k4[1:-1] = -dt*(H_KE[1:-1] + H_trap[1:-1] + H_LHY[1:-1] + H_int[1:-1] - mu*(phi[1:-1] + k3[1:-1]))
 
+        # Neumann Boundary Conditions
         k4[0] = k4[1]
         k4[-1] = k4[-2]
 
@@ -191,13 +197,13 @@ def petrov_im_tim_rk4_mat(phi,r,dr,dt,N,V,int_gas,im_t_steps):
         Norm = 4*pi*np.trapz(r**2*abs(phi)**2)*dr
         phi = phi/np.sqrt(Norm) 
 
-        # MU AND TOLERANCE CALCULATION
+        # MU AND TOLERANCE CALCULATION (calculated every 10th of the total imaginary time)
         if l%(im_t_steps//10)==0:
-            phi_r = np.gradient(phi,dr)
-            mu = np.trapz(r**2*(0.5*np.abs(phi_r)**2 + V*np.abs(phi)**2 + int_coef*np.abs(phi)**4 + LHY_coef*np.abs(phi)**5))/np.trapz(r**2*np.abs(phi)**2)
-            dens_prev = dens_current
-            dens_current = max(phi)
-            tol_dens = np.abs((dens_current - dens_prev)/dens_prev)
+            phi_r = np.gradient(phi,dr) # derivative of wavefunction
+            mu = np.trapz(r**2*(0.5*np.abs(phi_r)**2 + V*np.abs(phi)**2 + int_coef*np.abs(phi)**4 + LHY_coef*np.abs(phi)**5))/np.trapz(r**2*np.abs(phi)**2) # integral calculation of chemical potential
+            dens_prev = dens_current # iterate max density value
+            dens_current = max(N*np.abs(phi)**2) # current max density value
+            tol_dens = np.abs((dens_current - dens_prev)/dens_prev) # calculate tolerance between max densities
 
         # ITERATE COUNTER
         count = count + 1
