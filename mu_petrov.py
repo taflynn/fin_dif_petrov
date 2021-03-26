@@ -94,7 +94,7 @@ for i in range(0,len(N_partial)):
     # REAL TIME (for certain values of N)
     if N_current>1050:
         # REAL TIME FUNCTION
-        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu_array[i],r,dr,dt,N_current,V,int_gas,t_steps,mode)
+        [phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu_array[i],r,dr,dt,1.01*N_current,V,int_gas,t_steps,mode)
         # EXTRACTING FREQUENCY OF THE <r^2> OBSERVABLE
         omega_array[i] = curve_fitting(t_array,mean_r2)	
     else:
@@ -113,12 +113,13 @@ if comm.rank == 0:
     plt.ylim(-Mu[0],-Mu[-1])
     plt.xlabel("$(N - N_c)^{(1/4)}$")
     plt.legend(("$\omega_0$","-$\mu$"))
-    plt.savefig("mu_w_breath_damped.png",dpi=300)
+    plt.savefig("mu_w_quench_damped.png",dpi=300)
     plt.show
-    
+"""    
 # SAVING DATA (Produces two csv files: 1) mu(N); 2) omega_0(N))
 if comm.rank == 0:
     mu_data = np.column_stack((N_tilde,-Mu))
     np.savetxt('mu_petrov.csv',mu_data,delimiter=',',fmt='%18.16f')
     omega_data = np.column_stack((N_tilde,Omega))
     np.savetxt('omega0_petrov.csv',omega_data,delimiter=',',fmt='%18.16f')
+"""
