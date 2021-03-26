@@ -255,8 +255,9 @@ mean_r2 = np.zeros((t_steps//t_save)) # observable used here <r^2>
 dt = 0.1*dr**2
 
 # invoke breathing mode
-lamb = 1e-4 # small constant
-phi = np.exp(1j*lamb*r**2)*phi # small phase imprint of the form exp(i*lambda*F) where F = r^2 for breathing mode
+#lamb = 1e-4 # small constant
+#phi = np.exp(1j*lamb*r**2)*phi # small phase imprint of the form exp(i*lambda*F) where F = r^2 for breathing mode
+N = 4000
 
 for l in range(0,t_steps):  
     # k1 CALCULATION
@@ -361,8 +362,8 @@ plt.plot(t_array,mean_r2)
 plt.xlim((0,max(t_array)))
 plt.xlabel("$t$")
 plt.ylabel("$<r^2>$")
-plt.title("$\lambda = $"+str(lamb)+", $\mu_{tol} = $"+str(tol)+", $N = $"+str(N))
-
+#plt.title("$\lambda = $"+str(lamb)+", $\mu_{tol} = $"+str(tol)+", $N = $"+str(N))
+plt.savefig("quench_3000.png",dpi=300)
 #plt.clf() # clear plot
 
 # PLOTTING FINAL DENSITY SNAPSHOT
@@ -372,7 +373,7 @@ plt.title("$\lambda = $"+str(lamb)+", $\mu_{tol} = $"+str(tol)+", $N = $"+str(N)
 #plt.xlabel("$r$")
 #plt.ylabel("$n(r)$")
 #plt.savefig("dens_m_par.png",dpi=300)
-
+"""
 # CURVE FITTING
 # Define a generic damped sine curve
 def sine_func(x,a,b,c,d,f):
@@ -397,3 +398,4 @@ fitted = sine_func(t_array,popt[0],popt[1],popt[2],popt[3],pop[4])
 
 # Plot the fitted curve on top of the data
 #plt.plot(t_array,fitted,':')
+"""
