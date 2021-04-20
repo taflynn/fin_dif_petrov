@@ -19,7 +19,7 @@ from freq_funcs import curve_fitting # curve fitting function
 
 # SWITCHES:
 # trap? 0=NO,1=YES
-trap = 0
+trap = 1
 # interacting gas? (0 = Non-interacting gas, 1 = Interacting gas w/ LHY)
 int_gas = 1
 # breathing mode? (0 = No initial phase perturbation, hence no oscillation, 1 = Small phase perturbation)
@@ -38,8 +38,8 @@ t_steps = 30000 # number of real time steps (do not go too high as curve fitting
 
 # PARAMETERS
 pi = np.math.pi
-N = 5000
-a = 0.1
+N = 3000
+a = 0.05
 
 # POTENTIAL
 if trap == 0:
@@ -57,16 +57,14 @@ phi_0 = phi_0/np.sqrt(Norm) # normalised initial condition
 phi_ground = phi
 #N = 5025
 # REAL TIME
-[phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,V,int_gas,t_steps,mode)
+[phi,spacetime,t_array,mean_r2]	= petrov_real_tim_rk4_mat(phi,mu,r,dr,dt,N,0.99*V,int_gas,t_steps,mode)
 
 # SAVE FIGURE ON THE ROOT PROCESS
-"""
 plt.plot(t_array,mean_r2)
 plt.xlim(t_array[0],t_array[-1])
 plt.xlabel("$t$")
 plt.ylabel("$<r^2>$")
-plt.savefig("quench_obs_N"+str(N)+".png",dpi=300)
-"""
+plt.savefig("breath_N"+str(N)+"a"+str(a)+".png",dpi=300)
 """
 plt.plot(r,N*np.abs(phi_ground)**2)
 plt.xlim(r[0],r[-1])
@@ -76,7 +74,6 @@ plt.ylabel("$n_0$")
 plt.savefig("ground_trapped_a"+str(a)+".png",dpi=300)
 plt.clf()
 """
-
 R,T = np.meshgrid(r,t_array)
 plt.figure(figsize=(12,10))
 plt.pcolor(R,T,N*np.abs(spacetime.T)**2 - N*np.abs(phi_ground)**2,cmap="magma",shading="auto")
@@ -85,9 +82,13 @@ clb.ax.set_title('n(r,t)')
 plt.xlabel("r")
 plt.ylabel("t")
 plt.title("Density of $\phi(r,t)$")
-plt.savefig("spacetime_quench_N"+str(N)+".png",dpi=300)
+plt.savefig('spacetime_breath_N'+str(N)+'a'+str(a)+".png",dpi=300)
 """
 # SAVING DATA 
 obs_data = np.column_stack((t_array,mean_r2))
 np.savetxt('obs_quench.csv',obs_data,delimiter=',',fmt='%18.16f')
+"""
+"""
+ground_data = np.column_stack((r,np.sqrt(N)*phi_ground))
+np.savetxt('phi0_N'+str(N)+'a'+str(a)+'.csv',ground_data,delimiter=',',fmt='%18.16f')
 """
